@@ -17,7 +17,27 @@ class UserController extends Controller {
      * @return Response
      */
     public function displayLoginPage(Request $request) {
-        return view('login');
+	define("DUMMYPW", "/Z9S7YssOhthY9iQq9.N8e7bgCEA");
+        $username = $_SERVER['REDIRECT_name-id'];
+
+        $user_exists = UserHelper::userExists($username);
+        if ( ! $user_exists ) {
+            $user = UserFactory::createUser($username, '', DUMMYPW, 1, $request->ip(), null, 0);
+        }
+
+        $credentials_valid = UserHelper::checkCredentials($username, DUMMYPW);
+
+        if ($credentials_valid != false) {
+            // log user in
+            $role = $credentials_valid['role'];
+            $request->session()->put('username', $username);
+            $request->session()->put('role', $role);
+
+            return redirect()->route('index');
+        }
+
+        die("Should not be reachable");
+        //return view('login');
     }
 
     public function displaySignupPage(Request $request) {
